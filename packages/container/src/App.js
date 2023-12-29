@@ -1,8 +1,9 @@
-import React, { lazy, Suspense } from "react";
-import { BrowserRouter, Route, Switch } from "react-router-dom";
+import React, { lazy, Suspense, useEffect } from "react";
+import { Router, Route, Switch, Redirect } from "react-router-dom";
 import Header from "./components/Header";
 import Progress from "./components/Progress";
 import { StylesProvider, createGenerateClassName } from "@material-ui/core/styles";
+import { createBrowserHistory } from "history";
 
 const MarketingAppLazy = lazy(() => import("./components/MarketingApp"));
 const AuthAppLazy = lazy(() => import("./components/AuthApp"));
@@ -12,12 +13,20 @@ const generateClassName = createGenerateClassName({
     productionPrefix: "co",
 });
 
+const history = createBrowserHistory();
+
 export default () => {
     const [isSignedIn, setIsSignedIn] = React.useState(false);
 
+    useEffect(() => {
+        if (isSignedIn) {
+            history.push('/dashboard');
+        }
+    }, [isSignedIn])
+
     return (
         <StylesProvider generateClassName={generateClassName}>
-            <BrowserRouter>
+            <Router history={history} >
                 <div>
                     <Header onSignOut={() => setIsSignedIn(false)} isSignedIn={isSignedIn} />
                     <Suspense fallback={<Progress />}>
@@ -25,12 +34,15 @@ export default () => {
                             <Route path='/auth'>
                                 <AuthAppLazy onSignIn={() => setIsSignedIn(true)} />
                             </Route>
-                            <Route path="/dashboard" component={DashboardAppLazy} />
+                            <Route path="/dashboard">
+                                {!isSignedIn && <Redirect to="/" />}
+                                <DashboardAppLazy />
+                            </Route>
                             <Route path="/" component={MarketingAppLazy} />
                         </Switch>
                     </Suspense>
                 </div>
-            </BrowserRouter>
+            </Router>
         </StylesProvider>
     );
 }
