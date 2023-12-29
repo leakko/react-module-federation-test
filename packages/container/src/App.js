@@ -18,7 +18,7 @@ export default () => {
         <StylesProvider generateClassName={generateClassName}>
             <BrowserRouter>
                 <div>
-                    <Header isSignedIn={isSignedIn} />
+                    <Header onSignOut={() => setIsSignedIn(false)} isSignedIn={isSignedIn} />
                     <Suspense fallback={<Progress />}>
                         <Switch>
                             <Route path='/auth'>
